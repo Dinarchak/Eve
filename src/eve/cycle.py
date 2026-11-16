@@ -57,8 +57,8 @@ async def main():
                     })
             else:
                 print("agent> [превышен лимит вызовов инструментов]")
-            print('='*64)
-            print(*messages, sep='\n', end='\n\n')
+            # print('='*64)
+            # print(*messages, sep='\n', end='\n\n')
 
 
 if __name__ == '__main__':
