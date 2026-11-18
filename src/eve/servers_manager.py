@@ -1,10 +1,14 @@
-import asyncio
 from contextlib import AsyncExitStack
 from mcp import ClientSessionGroup, StdioServerParameters
 from mcp.client.sse import sse_client
-from mcp.client.streamable_http import streamable_http_client
+from mcp.client.session_group import StreamableHttpParameters, SseServerParameters
 
-from settings import settings
+from pydantic import BaseModel, Field, field_validator
+from typing import Annotated
+from settings import settings, MCPServerConfig
+import httpx
+import re
+import os
 
 
 def to_ollama_tool(name: str, tool) -> dict:
@@ -23,24 +27,27 @@ def prefix_hook(name: str, server_info) -> str:
 
 
 async def connect_server(group: ClientSessionGroup, stack: AsyncExitStack,
-                         name: str, cfg) -> None:
+                         name: str, cfg: Annotated[MCPServerConfig, Field(discriminator='type')]) -> None:
     t = cfg.type
     if t == "stdio":
         await group.connect_to_server(StdioServerParameters(
             command=cfg.command,
             args=cfg.args or [],
-            env=cfg.env,
+            env=cfg.env or {},
         ))
     elif t == "sse":
-        read, write = await stack.enter_async_context(sse_client(cfg.url))
-        await group.connect_to_server(None, session_params={
-            "read_stream": read, "write_stream": write,
-        })
+        params = SseServerParameters(
+            url=cfg.url,
+            headers=cfg.headers,
+        )
+        await group.connect_to_server(params)
     elif t == "http":
-        read, write, _ = await stack.enter_async_context(streamable_http_client(cfg.url))
-        await group.connect_to_server(None, session_params={
-            "read_stream": read, "write_stream": write,
-        })
+        print("HTTP headers:", cfg.headers)
+        params = StreamableHttpParameters(
+            url=cfg.url,
+            headers=cfg.headers,
+        )
+        await group.connect_to_server(params)
     else:
         raise ValueError(f"unknown transport: {t}")
 
