@@ -9,7 +9,8 @@ from typing import Literal, Union, Tuple, Type
 from dotenv import load_dotenv
 from typing import (
     List,
-    Dict
+    Dict,
+    Annotated
 )
 import re
 import os
@@ -28,7 +29,7 @@ def _resolve_env(value: str) -> str:
 
 class HttpMcpServerConfig(BaseModel):
     type: Literal['http']
-    headers: Dict[str, str] | None
+    headers: Dict[str, str] = Field(default_factory=dict)
     url: str
 
     @field_validator('headers')
@@ -74,7 +75,7 @@ class MCPSettings(BaseSettings):
         extra='ignore'
     )
 
-    mcp_servers: Dict[str, MCPServerConfig] = Field(
+    mcp_servers: Dict[str, Annotated[MCPServerConfig, Field(discriminator='type')]] = Field(
         default_factory=dict,
         alias="mcpServers"
     )

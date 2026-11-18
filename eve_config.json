@@ -1,6 +1,7 @@
 {
     "mcpServers": {
       "filesystem": {
+        "type": "stdio",
         "command": "npx",
         "args": ["-y", "@modelcontextprotocol/server-filesystem", "D:/Obsidian Vaults/Notion2"],
         "env": {}
