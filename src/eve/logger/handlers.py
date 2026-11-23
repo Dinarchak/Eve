@@ -18,6 +18,16 @@ class Handler:
             self.emit(entry)
 
 
+class StreamHandler(Handler):
+    def __init__(self, formatter: Formatter, stream: TextIO | None = None):
+        super().__init__(formatter)
+        self._stream = stream or sys.stdout
+
+    def emit(self, entry: LogEntry) -> None:
+        self._stream.write(self._formatter.format(entry) + "\n")
+        self._stream.flush()
+
+
 class StdioHadler(Handler):
     def __init__(self, formatter: Formatter, stream: TextIO | None = None):
         super().__init__(formatter)
