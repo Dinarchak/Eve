@@ -16,8 +16,8 @@ class EveLogger:
 
     def log(
             self,
-            message: str,
-            level: Level | str
+            level: Level | str,
+            message: str
             ) -> None:
         lvl = Level.parse(level)
         if lvl < self._threshold:
@@ -35,7 +35,7 @@ class EveLogger:
         for handler in self._handlers:
             try:
                 handler.emit(entry)
-            except:
+            except Exception as e:
                 pass
 
     def debug(self, message: str): self.log(Level.DEBUG, message)
@@ -70,7 +70,7 @@ class EveLoggerFactory:
         
         RunContext.set(run_id)
         cls._threshold = Level.parse(level)
-        formatter = JSONFormatter if json_format else Formatter(format=fmt, datefmt=datefmt)
+        formatter = JSONFormatter() if json_format else Formatter(format=fmt, datefmt=datefmt)
         handlers: list[Handler] = []
 
         if output in {"stdout", "both"}:
