@@ -4,6 +4,11 @@ from ollama import chat
 from servers_manager import build_group
 from contextlib import AsyncExitStack
 import asyncio
+from datetime import datetime
+from logger import EveLoggerFactory
+from pathlib import Path
+from settings import settings
+
 
 class Roles(Enum):
     SYS = 'system'
@@ -11,17 +16,21 @@ class Roles(Enum):
     ASS = 'assistant'
     TOOL = 'tool'
 
-
 class Message(BaseModel):
     role: Roles
     content: str
 
+EveLoggerFactory.setup(
+    level='info',
+    output='stdout',
+    fmt="[{level}] {time} | {message}"
+)
+logger = EveLoggerFactory.get('Eve')
 
 async def main():
 
     async with AsyncExitStack() as stack:
         group, tools = await build_group(stack)
-        print(f"Loaded tools: {list(group.tools)}")
 
         messages = []
         while True:
@@ -56,9 +65,7 @@ async def main():
                         "content": content,
                     })
             else:
-                print("agent> [превышен лимит вызовов инструментов]")
-            # print('='*64)
-            # print(*messages, sep='\n', end='\n\n')
+                logger.info("agent> [превышен лимит вызовов инструментов]")
 
 
 if __name__ == '__main__':
