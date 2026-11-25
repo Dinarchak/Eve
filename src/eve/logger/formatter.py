@@ -1,6 +1,5 @@
 import json
 import re
-from datetime import datetime
 from .entry import LogEntry
 
 _SECRET_KEYS = {"authorization", "x-api-key", "api_key", "token", "password", "secret"}
@@ -13,14 +12,13 @@ class Formatter:
         "[{level}] {time} | {message} | {run_id}"
     )
 
-
     def __init__(self, format: str | None = None, datefmt: str | None = None):
         self.fmt = format or self.DEFAUTL_FORMAT
         self.datefmt = datefmt or "%Y-%m-%d %H:%M:%S.%f"
 
-    def format(self, entry: LogEntry, message: str):
-        text = self.fmt(
-            level=entry.level,
+    def format(self, entry: LogEntry):
+        text = self.fmt.format(
+            level=entry.level.name,
             time=entry.send_time.strftime(self.datefmt),
             message=entry.message,
             run_id=entry.run_id
@@ -39,9 +37,10 @@ class Formatter:
 
 class JSONFormatter:
     "JSONL-форматтер: LogEntry - JSON-строка"
-    def format(entry: LogEntry):
+
+    def format(self, entry: LogEntry):
         payload = {
-            "time": entry.timestamp.isoformat(timespec="milliseconds"),
+            "time": entry.send_time.isoformat(timespec="milliseconds"),
             "level": entry.level.name,
             "run_id": entry.run_id,
             "message": entry.message
