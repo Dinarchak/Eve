@@ -80,6 +80,8 @@ class MCPSettings(BaseSettings):
         alias="mcpServers"
     )
 
+    logs_base_path: str
+
     @classmethod
     def settings_customise_sources(
         cls,
