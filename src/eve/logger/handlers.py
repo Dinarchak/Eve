@@ -2,12 +2,12 @@ from .formatter import Formatter, JSONFormatter
 from .entry import LogEntry
 from typing import TextIO
 from pathlib import Path
-import threading
+from settings import settings
 import sys
 
 
 class Handler:
-    def __init__(self, formatter: Formatter)
+    def __init__(self, formatter: Formatter):
         self._fmtter = formatter
 
     def emit(self, entry: LogEntry):
@@ -24,25 +24,15 @@ class StreamHandler(Handler):
         self._stream = stream or sys.stdout
 
     def emit(self, entry: LogEntry) -> None:
-        self._stream.write(self._formatter.format(entry) + "\n")
-        self._stream.flush()
-
-
-class StdioHadler(Handler):
-    def __init__(self, formatter: Formatter, stream: TextIO | None = None):
-        super().__init__(formatter)
-        self._stream = stream or sys.stdout
-
-
-    def emit(self, entry: LogEntry):
-        self._stream.write(self._fmtter.format(entry) + '\n')
+        self._stream.write(self._fmtter.format(entry) + "\n")
         self._stream.flush()
 
 
 class FileHandler(Handler):
     def __init__(self, formatter: Formatter | JSONFormatter, path: "str | Path"):
         super().__init__(formatter=formatter)
-        self._path = Path(path)
+
+        self._path = Path(settings.logs_base_path).joinpath(path)
         self._path.parent.mkdir(parents=True, exist_ok=True)
         self._file = open(self._path, "a", encoding="utf-8")
 
