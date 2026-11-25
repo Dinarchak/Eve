@@ -17,3 +17,6 @@ node_modules
 
 # Voice models
 voice_models/
+
+# logs
+logs/
